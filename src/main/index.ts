@@ -5,9 +5,18 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 // import { dialog } from 'electron'
-require('dotenv').config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
-if(process.env.NODE_ENV == "production"){process.env.APP_ROOT = process.env.APPDATA + '\\.ephermine\\'}
+
+//if production -- define yorself
+process.env.APP_DIR = process.env.APPDATA + '\\.ephermine\\'
 process.env.BUILD_VERSION = app.getVersion();
+process.env.API_URL="https://mine.epher.su"
+process.env.UPDATE_CHANNEL="release"
+process.env.DEBUG_MODE="true"
+
+//env features
+if(process.env.NODE_ENV === 'development'){
+  require('dotenv').config({ path: `.env.development` });
+}
 
 function createWindow(): void {
   // Create the browser window.

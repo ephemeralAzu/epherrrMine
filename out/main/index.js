@@ -3,11 +3,14 @@ const electron = require("electron");
 const path = require("path");
 const utils = require("@electron-toolkit/utils");
 const icon = path.join(__dirname, "../../resources/icon.png");
-require("dotenv").config({ path: `.env.${process.env.NODE_ENV || "development"}` });
-if (process.env.NODE_ENV == "production") {
-  process.env.APP_ROOT = process.env.APPDATA + "\\.ephermine\\";
-}
+process.env.APP_DIR = process.env.APPDATA + "\\.ephermine\\";
 process.env.BUILD_VERSION = electron.app.getVersion();
+process.env.API_URL = "https://mine.epher.su";
+process.env.UPDATE_CHANNEL = "release";
+process.env.DEBUG_MODE = "true";
+if (process.env.NODE_ENV === "development") {
+  require("dotenv").config({ path: `.env.development` });
+}
 function createWindow() {
   const mainWindow = new electron.BrowserWindow({
     resizable: false,

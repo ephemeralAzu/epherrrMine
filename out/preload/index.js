@@ -19,6 +19,13 @@ function _interopNamespaceDefault(e) {
   return Object.freeze(n);
 }
 const fs__namespace = /* @__PURE__ */ _interopNamespaceDefault(fs);
+const defaultConfig = new Array();
+defaultConfig["PLAYER_ID"] = "-1;";
+defaultConfig["PLAYER_UUID"] = "-1";
+defaultConfig["PLAYER_NICKNAME"] = "-1;";
+defaultConfig["PLAYER_TOKEN"] = "-1;";
+defaultConfig["UPDATE_CHANNEL"] = "release;";
+defaultConfig["APP_DIR"] = "unset;";
 let config = new Object();
 function get() {
   if (JSON.stringify(config).length <= 3) {
@@ -27,6 +34,7 @@ function get() {
   return config;
 }
 function globalize(config2) {
+  if (process.env.DEBUG_MODE) console.log("Globalizing config");
   if (config2.APP_DIR === "unset") {
     config2.APP_DIR = process.env.APP_DIR;
   }
@@ -39,6 +47,11 @@ function globalize(config2) {
   return config2;
 }
 function read() {
+  if (process.env.DEBUG_MODE) console.log("Reading config");
+  if (!fs__namespace.existsSync(process.env.APP_DIR + "\\default.conf")) {
+    reset();
+    return;
+  }
   let cfgStr = fs__namespace.readFileSync(process.env.APP_DIR + "\\default.conf").toString();
   let vars = cfgStr.replace(/\r?\n|\r/g, "");
   let variables = vars.split(";");
@@ -48,38 +61,20 @@ function read() {
   });
   cfg = globalize(cfg);
   config = cfg;
-  if (process.env.DEBUG_MODE) {
-    console.log(cfg);
-  }
+  if (process.env.DEBUG_MODE) console.log(cfg);
   return;
 }
-async function getUpdate() {
-  const resp = await fetch(process.env.API_URL + "/updates/latest/" + process.env.UPDATE_CHANNEL, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" }
+async function reset() {
+  if (process.env.DEBUG_MODE) console.log("Resetting config");
+  defaultConfig.forEach((arg) => {
+    fs__namespace.writeFileSync(process.env.APP_DIR + "\\default.conf", arg);
   });
-  let needUpdate = false;
-  let currVer = process.env.BUILD_VERSION?.split("-") || "";
-  let latest = await resp.json();
-  if (currVer[0].split(".")[0] < latest["release"]) {
-    needUpdate = true;
-  } else {
-    if (currVer[0].split(".")[1] < latest["version"].split(".")[0]) {
-      needUpdate = true;
-    } else {
-      if (currVer[0].split(".")[2] < latest["version"].split(".")[1]) {
-        needUpdate = true;
-      }
-    }
-  }
-  console.log(needUpdate);
-  console.log(currVer[0] + " -> " + latest["release"] + "." + latest["version"]);
-  if (needUpdate) {
-    alert("Необходимо установить обновление");
-    const { shell } = require("electron");
-    let url = await latest["url"];
-    shell.openExternal(url);
-  }
+}
+async function getUpdate() {
+  console.log(process);
+}
+if (process.env.DEBUG_MODE) {
+  console.log(process.env);
 }
 get();
 getUpdate();

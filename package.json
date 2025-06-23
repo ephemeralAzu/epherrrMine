@@ -1,10 +1,10 @@
 {
   "name": "epherrrmine",
-  "version": "0.0.1-devbuild",
+  "version": "0.0.4",
   "description": "Some stupid launcher for minecraft!",
   "main": "./out/main/index.js",
   "author": "ephemeral.su",
-  "homepage": "https://ephemeral.su",
+  "homepage": "https://github.com/ephemeralAzu/epherrrMine",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.vue --fix",
@@ -13,7 +13,7 @@
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
-    "build": "electron-vite build && electron-builder --publish=always",
+    "build": "electron-vite build && electron-builder",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:portable": "npm run build && electron-builder --win portable",
@@ -53,12 +53,14 @@
     "@electron-toolkit/utils": "^3.0.0",
     "brace-expansion": "^4.0.1",
     "dotenv": "^16.5.0",
+    "electron-log": "^5.4.1",
     "electron-toolkit": "^1.0.1",
     "electron-updater": "^6.1.7",
     "extract-zip": "^2.0.1",
     "install": "^0.13.0",
     "node-fetch": "^3.3.2",
-    "npm": "^10.9.2"
+    "npm": "^10.9.2",
+    "update-electron-app": "^3.1.1"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^1.0.2",

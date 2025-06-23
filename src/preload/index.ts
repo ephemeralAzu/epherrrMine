@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { contextBridge} from 'electron'
+import { contextBridge } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 // import * as fs from 'fs'
 // import { Authenticator, Client } from 'minecraft-launcher-core'
@@ -9,15 +9,19 @@ import { electronAPI } from '@electron-toolkit/preload'
 // import { EventEmitter } from 'node:events'
 // import { electron, env } from 'node:process'
 // import os from 'node:os'
+
+
 import * as config from '../functions/config'
 import * as update from "../functions/update"
 // let Emitter = EventEmitter
 // import * as enviroment from '../functions/environment.ts'
 // import * as userFunctions from '../functions/auth'
-
+import { updateElectronApp, UpdateSourceType } from 'update-electron-app'
+if(process.env.DEBUG_MODE){console.log(process.env);}
 config.get()
 
 update.getUpdate()
+
 interface Player {
   id: number
   token: string
