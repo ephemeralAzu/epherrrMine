@@ -71,7 +71,29 @@ async function reset() {
   });
 }
 async function getUpdate() {
-  console.log(process);
+  process.env.UPDATE_CHANNEL;
+  let repo = "ephemeralAzu/epherrrMine";
+  if (typeof process.env.PORTABLE_EXECUTABLE_DIR == "undefined") ;
+  let response = await fetch("https://api.github.com/repos/" + repo + "/releases", {
+    method: "GET",
+    headers: { "Content-Type": "application/json" }
+  });
+  let releases = await response.json();
+  let versions = new Array();
+  await releases.forEach((release) => {
+    console.log(release.target_commitish + "   " + release.name);
+    let portable;
+    let setup;
+    release.assets.forEach((exe) => {
+      if (exe.browser_download_url.split("-")[1] == "portable") {
+        portable = exe.browser_download_url;
+      } else {
+        setup = exe.browser_download_url;
+      }
+    });
+    versions.push({ version: release.name, channel: release.target_commitish, artifacts: { portable, setup } });
+  });
+  console.log(versions);
 }
 if (process.env.DEBUG_MODE) {
   console.log(process.env);

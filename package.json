@@ -1,6 +1,6 @@
 {
   "name": "epherrrmine",
-  "version": "0.0.4",
+  "version": "0.0.4dev",
   "description": "Some stupid launcher for minecraft!",
   "main": "./out/main/index.js",
   "author": "ephemeral.su",
