@@ -43,7 +43,7 @@ export async function getUpdate(){
 //ЕСЛИ ДА ТО МЫ КАЧАЕМ НОВУЮ ВЕРСИЮ, ПЕРЕМЕЩАЕМ НА РАБОЧИЙ СТОЛ С ПРИПИСКОЙ NEW shell.openExternal('https://www.google.com'); (ИЛИ ФЕТЧЕМ!!!)
 // ДАЛЕЕ ЗАПУСКАЕМ С АРГУМЕТОМ ОБНОВЛЕНИЯ var oShell = new ActiveXObject("Shell.Application"); var commandtoRun = "C:/Program Files/WinRAR/WinRAR.exe";  oShell.ShellExecute(commandtoRun, "", "", "open", "1");
 // В НОВОЙ СБОРКЕ ПРОВЕРЯЕМ ЕСЛИ ЕСТЬ АРГУМЕНТ ТО УДАЛЯЕМ ЭКСЕ ПЕРЕДАННЫЙ В АРГУМЕНТЕ
-// ЕСЛИ ЭТО УСТАНОВЩИК ТО ПРОСТО ЗАПУСКАЕМ ЕГО И УМИРАЕМ
+// ЕСЛИ ЭТО УСТАНОВЩИК ТО ПРОСТО ЗАПУСКАЕМ ЕГО C ПАРАМЕТРОМ /S И УМИРАЕМ
 
   //   const resp = await fetch(process.env.API_URL + '/updates/latest/' + process.env.UPDATE_CHANNEL, {
   //   method: 'GET',
