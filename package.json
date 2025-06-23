@@ -1,0 +1,82 @@
+{
+  "name": "epherrrmine",
+  "version": "0.0.1-devbuild",
+  "description": "Some stupid launcher for minecraft!",
+  "main": "./out/main/index.js",
+  "author": "ephemeral.su",
+  "homepage": "https://ephemeral.su",
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.vue --fix",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
+    "typecheck:web": "vue-tsc --noEmit -p tsconfig.web.json --composite false",
+    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "start": "electron-vite preview",
+    "dev": "electron-vite dev",
+    "build": "electron-vite build && electron-builder --publish=always",
+    "postinstall": "electron-builder install-app-deps",
+    "build:unpack": "npm run build && electron-builder --dir",
+    "build:portable": "npm run build && electron-builder --win portable",
+    "build:installer": "npm run build && electron-builder --win nsis",
+    "build:all": "npm run build:portable && npm run build:installer",
+    "release:gitea": "node scripts/release.js"
+  },
+  "build": {
+    "appId": "com.epherrr.launcher",
+    "productName": "EpherrrMine",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "dist/**",
+      "out/**",
+      "node_modules/**",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "EpherrrMine"
+    }
+  },
+  "dependencies": {
+    "@electron-toolkit/preload": "^3.0.0",
+    "@electron-toolkit/utils": "^3.0.0",
+    "brace-expansion": "^4.0.1",
+    "dotenv": "^16.5.0",
+    "electron-toolkit": "^1.0.1",
+    "electron-updater": "^6.1.7",
+    "extract-zip": "^2.0.1",
+    "install": "^0.13.0",
+    "node-fetch": "^3.3.2",
+    "npm": "^10.9.2"
+  },
+  "devDependencies": {
+    "@electron-toolkit/eslint-config": "^1.0.2",
+    "@electron-toolkit/eslint-config-ts": "^2.0.0",
+    "@electron-toolkit/tsconfig": "^1.0.1",
+    "@rushstack/eslint-patch": "^1.10.3",
+    "@types/node": "^20.14.8",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "@vue/eslint-config-prettier": "^9.0.0",
+    "@vue/eslint-config-typescript": "^13.0.0",
+    "electron": "^31.0.2",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^3.1.0",
+    "eslint-plugin-vue": "^9.26.0",
+    "sass-embedded": "^1.85.0",
+    "typescript": "^5.5.2",
+    "vite": "^6.3.5",
+    "vue": "^3.4.30",
+    "vue-tsc": "^2.0.22"
+  }
+}

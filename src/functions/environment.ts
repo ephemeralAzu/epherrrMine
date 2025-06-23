@@ -1,0 +1,2 @@
+//environment
+export default {}
