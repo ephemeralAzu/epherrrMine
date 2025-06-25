@@ -60,7 +60,7 @@ export default {
     async loadingAnim(enabled: boolean, text: string, error: any) {
       this.debugMode = <any>window.electron.process.env.DEBUG_MODE
       if (this.debugMode) {
-        if(text.length > 1) console.log(text)
+        if(text.length > 1) console.log("moved to: " + text.substring(0, text.indexOf(":")))
         if(error.length > 1) console.log(error)
       }
     let mess = text.substring(text.indexOf(":")+1, text.length)
