@@ -1,25 +1,30 @@
 //@ts-nocheck
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, ipcRenderer } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { Socket } from 'net';
 import icon from '../../resources/icon.png?asset'
 
-// import { dialog } from 'electron'
-
 //if production -- define yorself
-process.env.APP_DIR = process.env.APPDATA + '\\.ephermine\\'
-process.env.BUILD_VERSION = app.getVersion();
-process.env.API_URL="https://mine.epher.su"
-process.env.UPDATE_CHANNEL="release"
-process.env.DEBUG_MODE="true"
-
 //env features
 if(process.env.NODE_ENV === 'development'){
+  console.log("Enabling custom enviroiment");
   require('dotenv').config({ path: `.env.development` });
+}else{
+  process.env.APP_DIR = process.env.APPDATA + '\\.ephermine\\'
+  //process.env.APP_DIR = "E:\\codes\\epherrrMine" + '\\dev-root\\'
+  process.env.BUILD_VERSION = app.getVersion();
+  process.env.API_URL="https://mine.epher.su"
+  process.env.UPDATE_CHANNEL="dev"
+  process.env.DEBUG_MODE="false"
 }
-
+if(!process.env.BUILD_VERSION){
+  process.env.BUILD_VERSION = app.getVersion();
+}
+process.env.UPDATED = <string>app.commandLine.getSwitchValue("updated")
 function createWindow(): void {
   // Create the browser window.
+  
   const mainWindow = new BrowserWindow({
     resizable: false,
     width: 900,
@@ -32,9 +37,12 @@ function createWindow(): void {
       sandbox: false
     }
   })
-
-  mainWindow.on('ready-to-show', () => {mainWindow.show()})
-
+  mainWindow.webContents.openDevTools()
+  mainWindow.on('ready-to-show', () => {
+    mainWindow.show();
+    const pipeArg = process.argv.find(a => a.startsWith('--pipe='));
+    if (pipeArg) notify(pipeArg.split('=')[1]);
+  })
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -47,8 +55,8 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-
-  mainWindow.webContents.openDevTools()
+// console.log(app.commandLine.getSwitchValue("updated"));
+  
 
   // ipcMain.handle('showDialog', (e, properties) => {
   //   return dialog.showOpenDialog({ properties })
@@ -67,19 +75,13 @@ function createWindow(): void {
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
-
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
+  // Default open or close DevTools by F12 in developments
+  // and ignore CommandOrControl + R in production.    
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
-
   createWindow()
-
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
@@ -96,5 +98,12 @@ app.on('window-all-closed', () => {
   }
 })
 
+function notify(pipe: string) {
+  const client = new Socket();
+  client.connect(pipe, () => {
+    client.write('READY');
+    client.end();
+  }).on('error', console.error);
+}
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.

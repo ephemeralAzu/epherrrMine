@@ -3,7 +3,7 @@ export default {
   props: ['openWindow', 'loadingAnim'],
   data() {
     return {
-      already_registered: true,
+      already_registered: false,
       user: {
         token: '',
         login: '',
@@ -84,6 +84,11 @@ export default {
         this.lock_form = 100
         this.$emit('loadingAnim', false, 'Выполняется вход...', data)
       }
+    },
+    changeForm(){
+      setTimeout(() => {
+        this.already_registered = !this.already_registered 
+      },200)
     }
     // async insertNewToken(newToken: string){
     //   this.$emit('loadingAnim', true, "Проверяем новый токен...")
@@ -136,14 +141,14 @@ export default {
           <img src="../assets/arrow.svg" alt="" />
         </button>
       </form>
-      <h1 class="switch_text" v-show="100 == lock_form" @click="already_registered = true">
+      <h1 class="switch_text" v-show="100 == lock_form" @click="$emit('openWindow', 'auth'); changeForm()">
         Уже смешарик?
       </h1>
     </div>
   </transition>
 
   <transition name="fade" mode="out-in">
-    <div class="wrapper_token login" v-if="already_registered" @click="show_error = false">
+    <div class="wrapper_token login" v-if="already_registered" @click="show_error = false;">
       <h1 class="head_text">Введите учетные данные</h1>
       <h2 class="error_text" v-show="show_error">Неверный логин или пароль</h2>
 
@@ -173,7 +178,7 @@ export default {
         class="switch_text"
         :style="'opacity:' + lock_form + '%;'"
         v-show="100 == lock_form"
-        @click="already_registered = false"
+        @click=" $emit('openWindow', 'auth'); changeForm()"
       >
         Еще не смешарик?
       </h1>

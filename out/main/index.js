@@ -2,15 +2,22 @@
 const electron = require("electron");
 const path = require("path");
 const utils = require("@electron-toolkit/utils");
+const net = require("net");
 const icon = path.join(__dirname, "../../resources/icon.png");
-process.env.APP_DIR = process.env.APPDATA + "\\.ephermine\\";
-process.env.BUILD_VERSION = electron.app.getVersion();
-process.env.API_URL = "https://mine.epher.su";
-process.env.UPDATE_CHANNEL = "release";
-process.env.DEBUG_MODE = "true";
 if (process.env.NODE_ENV === "development") {
+  console.log("Enabling custom enviroiment");
   require("dotenv").config({ path: `.env.development` });
+} else {
+  process.env.APP_DIR = process.env.APPDATA + "\\.ephermine\\";
+  process.env.BUILD_VERSION = electron.app.getVersion();
+  process.env.API_URL = "https://mine.epher.su";
+  process.env.UPDATE_CHANNEL = "dev";
+  process.env.DEBUG_MODE = "false";
 }
+if (!process.env.BUILD_VERSION) {
+  process.env.BUILD_VERSION = electron.app.getVersion();
+}
+process.env.UPDATED = electron.app.commandLine.getSwitchValue("updated");
 function createWindow() {
   const mainWindow = new electron.BrowserWindow({
     resizable: false,
@@ -24,8 +31,11 @@ function createWindow() {
       sandbox: false
     }
   });
+  mainWindow.webContents.openDevTools();
   mainWindow.on("ready-to-show", () => {
     mainWindow.show();
+    const pipeArg = process.argv.find((a) => a.startsWith("--pipe="));
+    if (pipeArg) notify(pipeArg.split("=")[1]);
   });
   mainWindow.webContents.setWindowOpenHandler((details) => {
     electron.shell.openExternal(details.url);
@@ -36,14 +46,12 @@ function createWindow() {
   } else {
     mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
   }
-  mainWindow.webContents.openDevTools();
 }
 electron.app.whenReady().then(() => {
   utils.electronApp.setAppUserModelId("com.electron");
   electron.app.on("browser-window-created", (_, window) => {
     utils.optimizer.watchWindowShortcuts(window);
   });
-  electron.ipcMain.on("ping", () => console.log("pong"));
   createWindow();
   electron.app.on("activate", function() {
     if (electron.BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -54,3 +62,10 @@ electron.app.on("window-all-closed", () => {
     electron.app.quit();
   }
 });
+function notify(pipe) {
+  const client = new net.Socket();
+  client.connect(pipe, () => {
+    client.write("READY");
+    client.end();
+  }).on("error", console.error);
+}

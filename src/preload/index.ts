@@ -9,18 +9,16 @@ import { electronAPI } from '@electron-toolkit/preload'
 // import { EventEmitter } from 'node:events'
 // import { electron, env } from 'node:process'
 // import os from 'node:os'
-
-
+// console.log(electronAPI.ipcRenderer.postMessage("start"));
 import * as config from '../functions/config'
 import * as update from "../functions/update"
 // let Emitter = EventEmitter
 // import * as enviroment from '../functions/environment.ts'
 // import * as userFunctions from '../functions/auth'
-import { updateElectronApp, UpdateSourceType } from 'update-electron-app'
-if(process.env.DEBUG_MODE){console.log(process.env);}
-config.get()
-
-update.getUpdate()
+if(process.env.DEBUG_MODE){console.log("Actual ENV")}
+if(process.env.DEBUG_MODE){console.log(process.env)}
+if(process.env.DEBUG_MODE){console.log("Actual CONFIG")}
+if(process.env.DEBUG_MODE){console.log(config.get())}else{config.get()}
 
 interface Player {
   id: number
@@ -52,7 +50,6 @@ interface Config {
   params: Params
   packs: ModPack
 }
-
 // console.log(import.meta.env.VITE_DEFAULT_ROOT);
 // //////////
 // let totmem = os.totalmem()
@@ -175,9 +172,8 @@ interface Config {
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
-    // // contextBridge.exposeInMainWorld('api', api)
-    // contextBridge.exposeInMainWorld('env', enviroment)
-    // contextBridge.exposeInMainWorld('user', userFunctions)
+    contextBridge.exposeInMainWorld('update', update)
+    contextBridge.exposeInMainWorld('config', config)
   } catch (error) {
     console.error(error)
   }
@@ -185,9 +181,9 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.electron = electronAPI
   // // @ts-ignore (define in dts)
-  // // window.api = api
+  window.update = update
   // // @ts-ignore (define in dts)
-  // window.env = enviroment
+  window.config = config
   // // @ts-ignore (define in dts)
   // window.user = userFunctions
 }

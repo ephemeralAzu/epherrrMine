@@ -4,7 +4,7 @@ defaultConfig["PLAYER_ID"]="-1;"
 defaultConfig["PLAYER_UUID"]="-1";
 defaultConfig["PLAYER_NICKNAME"]="-1;"
 defaultConfig["PLAYER_TOKEN"]="-1;"
-defaultConfig["UPDATE_CHANNEL"]="release;"
+defaultConfig["UPDATE_CHANNEL"]="unset;"
 defaultConfig["APP_DIR"]="unset;"
 
 
@@ -33,6 +33,7 @@ return config
 
 export function read() {
   if(process.env.DEBUG_MODE)console.log("Reading config");
+  if(!fs.existsSync(<any>process.env.APP_DIR)) fs.mkdirSync(<any>process.env.APP_DIR)
   if(!fs.existsSync(process.env.APP_DIR + '\\default.conf')){
     reset()
     return
@@ -46,11 +47,12 @@ export function read() {
   });
   cfg = globalize(cfg)
   config = cfg
-  if(process.env.DEBUG_MODE)console.log(cfg);
   return
 }
 
 export async function reset(){
+  if(!fs.existsSync(<any>process.env.APP_DIR)) fs.mkdirSync(<any>process.env.APP_DIR)
+  
   if(process.env.DEBUG_MODE)console.log("Resetting config");
   defaultConfig.forEach(arg =>{
     fs.writeFileSync(process.env.APP_DIR + '\\default.conf', arg)
