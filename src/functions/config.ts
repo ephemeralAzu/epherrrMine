@@ -1,41 +1,43 @@
 import * as fs from 'fs'
-let config = new Object()
+let config_example = 
+  "DEBUG_MODE=false;\n" +
+  "PLAYER_ID=NULL;\n" +
+  "PLAYER_UUID=NULL;\n" +
+  "PLAYER_NICKNAME=NULL;\n" +
+  "PLAYER_TOKEN=NULL;\n" +
+  "UPDATE_CHANNEL=release;\n" +
+  "APP_DIR=" + process.env.APP_DIR + ";"
+
+let config = new Array()
+
 export function get(){
-  if(JSON.stringify(config).length <= 3){
-    read()
-  }
-  return config
+  return read()
 }
+export function resetConfig() {
+  if(process.env.DEBUG_MODE) console.log("Config corrupted - resetting");
 
-function globalize(config){
-  if(config.APP_DIR === "unset"){
-    config.APP_DIR = process.env.APP_DIR
-  }
+    fs.writeFileSync(process.env.APP_DIR + '\\default.conf', config_example)
 
-  if(config.UPDATE_CHANNEL === "unset"){
-    config.UPDATE_CHANNEL = "release"
-    process.env.UPDATE_CHANNEL = "release"
-  }else{
-    process.env.UPDATE_CHANNEL = config.UPDATE_CHANNEL
-  }
-return config
+    config = read()
+    return config
 }
-
-
-export async function resetConfig() {}
 
 export function read() {
-  let cfgStr = fs.readFileSync(process.env.APP_DIR + '\\default.conf').toString()
-  let vars = cfgStr.replace(/\r?\n|\r/g, '')
-  let variables = vars.split(";")
-  let cfg = new Array()
-  variables.forEach(variable => {
+  if(fs.existsSync(process.env.APP_DIR + '\\default.conf')){
+    let cfgStr = fs.readFileSync(process.env.APP_DIR + '\\default.conf').toString()
+    let vars = cfgStr.replace(/\r?\n|\r/g, '')
+    let variables = vars.split(";")
+    let cfg = new Array()
+
+    variables.forEach(variable => {
       cfg[variable.split("=")[0]] = variable.split("=")[1]
-  });
-  cfg = globalize(cfg)
-  config = cfg
-  if(process.env.DEBUG_MODE){
-    console.log(cfg);
+      config = cfg
+    });
+    if(typeof config["DEBUG_MODE"] !== "undefined" && config["DEBUG_MODE"] !== "false"){
+      process.env.DEBUG_MODE = "true"
+    }
+    return config
+  }else{    
+    return resetConfig()
   }
-  return
 }

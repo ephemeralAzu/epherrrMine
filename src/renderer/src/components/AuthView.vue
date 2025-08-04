@@ -1,9 +1,10 @@
 <script lang="ts">
+import { Config } from '@renderer/env';
+
 export default {
   props: ['openWindow', 'loadingAnim'],
   data() {
     return {
-      already_registered: true,
       user: {
         token: '',
         login: '',
@@ -16,113 +17,26 @@ export default {
     }
   },
   async mounted() {
-    console.log();
-    this.user.token = window.user
-  // this.$emit('loadingAnim', true, "Проверяем токен...")
-  //   this.config = await window.api.config.get()
-  //   if(this.config.player.token.length === 0){
-  //     this.show = true
-  //     this.$emit('loadingAnim', false, "")
-  //   }else{
-  //     let interval = setInterval(async () => {
-  //     let player = await this.checkToken(this.config.player.token)
-  //     if(player.err.length !== 0){
-  //       switch (player.err) {
-  //         case "ERR_UNEXPECTED":
-  //         this.$emit('loadingAnim', true, "НЕОПОЗНАННАЯ ОШИБКА!!! СВЯЖИТЕСЬ С РАЗРАБОТЧИКОМ!!!")
-  //           clearInterval(interval)
-  //           break;
-  //         case "ERR_NOT_FOUND":
-  //           clearInterval(interval)
-  //           this.err = true
-  //           this.show = true
-  //           this.$emit('loadingAnim', false, 'Неверный токен');
-  //           break;
-  //         case "ERR_CONNECTION":
-  //           this.$emit('loadingAnim', true, 'Еще чуть-чуть...');
-  //           break;
-  //       }
-  //     }else{
-  //       player = player.data
-  //       this.$emit('loadingAnim', true, 'Токен верный!');
-  //       clearInterval(interval)
-  //       if(this.config.player !== player){
-  //         this.$emit('loadingAnim', true, 'Обновление данных');
-  //         await window.api.config.set("player", player)
-  //       }
-  //       // this.$emit('openWindow', 'nickname');
-  //     }
-
-  //   },1000)
-  //   }
+    let token_check = await window.auth.startup()
+    if(token_check.error && token_check.data == "FIRST_AUTH"){
+      this.$emit('loadingAnim', false, "", token_check.data)
+    }else{
+      
+    }
   },
   methods: {
     async sendToken(token: String) {
       this.$emit('loadingAnim', true, 'Валидация токена...', token)
-      this.lock_form = 70
-      let data = await window.user.validate(token)
-      console.log(data)
-      if (data.valid) {
-        this.lock_form = 100
-        this.$emit('loadingAnim', false, 'Валидация токена...', data)
-      } else {
-        this.show_error = true
-        this.lock_form = 100
-        this.$emit('loadingAnim', false, 'Валидация токена...', data)
-      }
-    },
-    async auth(login: string, password: string) {
-      this.$emit('loadingAnim', true, 'Выполняется вход...', token)
-      this.lock_form = 70
-      let data = await window.user.auth(login, password)
-      console.log(data)
-      if (data.valid) {
-        this.lock_form = 100
-        this.$emit('loadingAnim', false, 'Выполняется вход...', data)
-      } else {
-        this.show_error = true
-        this.lock_form = 100
-        this.$emit('loadingAnim', false, 'Выполняется вход...', data)
-      }
-    }
-    // async insertNewToken(newToken: string){
-    //   this.$emit('loadingAnim', true, "Проверяем новый токен...")
-    //   let interval = setInterval(async () => {
-    //     let player = await this.checkToken(newToken)
-    //     if(player.err.length !== 0){
-    //       switch (player.err) {
-    //         case "ERR_UNEXPECTED":
-    //         this.$emit('loadingAnim', true, "НЕОПОЗНАННАЯ ОШИБКА!!! СВЯЖИТЕСЬ С РАЗРАБОТЧИКОМ!!!")
-    //           clearInterval(interval)
-    //           break;
-    //         case "ERR_NOT_FOUND":
-    //           clearInterval(interval)
-    //           this.err = true
-    //           this.show = true
-    //           this.$emit('loadingAnim', false, 'Неверный токен');
-    //           break;
-    //         case "ERR_CONNECTION":
-    //           this.$emit('loadingAnim', true, 'Еще чуть-чуть...');
-    //           break;
-    //       }
-    //     }else{
-    //       player = player.data
-    //       this.$emit('loadingAnim', true, 'Токен верный!');
-    //       clearInterval(interval)
-    //       await window.api.config.set("player", player)
-    //       // this.$emit('openWindow', 'nickname');
-    //     }
 
-    //   },1000)
-    // },
+    },
   }
 }
 </script>
 <template>
   <transition name="fade" mode="out-in">
     <div class="wrapper_token" v-if="!already_registered" @click="show_error = false">
-      <h1 class="head_text">Введите одноразовый токен {{ user.token }}</h1>
-      <h2 class="error_text" v-show="show_error">Токен не найден или уже использован</h2>
+      <h1 class="head_text">Введите ваш токен</h1>
+      <h2 class="error_text" v-show="show_error">Токен не найден</h2>
       <form @submit.prevent="sendToken(user.token)">
         <input
           type="text"
@@ -136,47 +50,6 @@ export default {
           <img src="../assets/arrow.svg" alt="" />
         </button>
       </form>
-      <h1 class="switch_text" v-show="100 == lock_form" @click="already_registered = true">
-        Уже смешарик?
-      </h1>
-    </div>
-  </transition>
-
-  <transition name="fade" mode="out-in">
-    <div class="wrapper_token login" v-if="already_registered" @click="show_error = false">
-      <h1 class="head_text">Введите учетные данные</h1>
-      <h2 class="error_text" v-show="show_error">Неверный логин или пароль</h2>
-
-      <form @submit.prevent="insertNewToken(token)">
-        <input
-          type="text"
-          placeholder="Login"
-          v-model="user.login"
-          required
-          :style="'opacity:' + lock_form + '%;'"
-          :disabled="100 !== lock_form"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          v-model="user.password"
-          required
-          :style="'opacity:' + lock_form + '%;'"
-          :disabled="100 !== lock_form"
-        />
-        <button :style="'opacity:' + lock_form + '%;'" v-show="100 == lock_form">
-          <img src="../assets/arrow.svg" alt="" />
-        </button>
-      </form>
-
-      <h1
-        class="switch_text"
-        :style="'opacity:' + lock_form + '%;'"
-        v-show="100 == lock_form"
-        @click="already_registered = false"
-      >
-        Еще не смешарик?
-      </h1>
     </div>
   </transition>
 </template>
@@ -198,6 +71,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  height: 100%;
   .head_text {
     color: rgb(255, 255, 255);
     font-family: Montserrat;
@@ -239,7 +113,7 @@ export default {
     justify-content: center;
     margin-top: 10px;
     input {
-      width: 80%;
+      width: 50%;
       height: 50px;
       font-family: Montserrat;
       font-size: 20px;
@@ -266,6 +140,7 @@ export default {
       outline: none;
       border: none;
       outline-offset: 0;
+      cursor: pointer;
       &:hover {
         background: rgb(142, 144, 158);
       }

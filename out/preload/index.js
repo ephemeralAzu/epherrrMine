@@ -19,76 +19,75 @@ function _interopNamespaceDefault(e) {
   return Object.freeze(n);
 }
 const fs__namespace = /* @__PURE__ */ _interopNamespaceDefault(fs);
-let config = new Object();
+let config_example = "DEBUG_MODE=false;\nPLAYER_ID=NULL;\nPLAYER_UUID=NULL;\nPLAYER_NICKNAME=NULL;\nPLAYER_TOKEN=NULL;\nUPDATE_CHANNEL=release;\nAPP_DIR=" + process.env.APP_DIR + ";";
+let config = new Array();
 function get() {
-  if (JSON.stringify(config).length <= 3) {
-    read();
-  }
+  return read();
+}
+function resetConfig() {
+  if (process.env.DEBUG_MODE) console.log("Config corrupted - resetting");
+  fs__namespace.writeFileSync(process.env.APP_DIR + "\\default.conf", config_example);
+  config = read();
   return config;
 }
-function globalize(config2) {
-  if (config2.APP_DIR === "unset") {
-    config2.APP_DIR = process.env.APP_DIR;
-  }
-  if (config2.UPDATE_CHANNEL === "unset") {
-    config2.UPDATE_CHANNEL = "release";
-    process.env.UPDATE_CHANNEL = "release";
-  } else {
-    process.env.UPDATE_CHANNEL = config2.UPDATE_CHANNEL;
-  }
-  return config2;
-}
 function read() {
-  let cfgStr = fs__namespace.readFileSync(process.env.APP_DIR + "\\default.conf").toString();
-  let vars = cfgStr.replace(/\r?\n|\r/g, "");
-  let variables = vars.split(";");
-  let cfg = new Array();
-  variables.forEach((variable) => {
-    cfg[variable.split("=")[0]] = variable.split("=")[1];
-  });
-  cfg = globalize(cfg);
-  config = cfg;
-  if (process.env.DEBUG_MODE) {
-    console.log(cfg);
-  }
-  return;
-}
-async function getUpdate() {
-  const resp = await fetch(process.env.API_URL + "/updates/latest/" + process.env.UPDATE_CHANNEL, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" }
-  });
-  let needUpdate = false;
-  let currVer = process.env.BUILD_VERSION?.split("-") || "";
-  let latest = await resp.json();
-  if (currVer[0].split(".")[0] < latest["release"]) {
-    needUpdate = true;
-  } else {
-    if (currVer[0].split(".")[1] < latest["version"].split(".")[0]) {
-      needUpdate = true;
-    } else {
-      if (currVer[0].split(".")[2] < latest["version"].split(".")[1]) {
-        needUpdate = true;
-      }
+  if (fs__namespace.existsSync(process.env.APP_DIR + "\\default.conf")) {
+    let cfgStr = fs__namespace.readFileSync(process.env.APP_DIR + "\\default.conf").toString();
+    let vars = cfgStr.replace(/\r?\n|\r/g, "");
+    let variables = vars.split(";");
+    let cfg = new Array();
+    variables.forEach((variable) => {
+      cfg[variable.split("=")[0]] = variable.split("=")[1];
+      config = cfg;
+    });
+    if (typeof config["DEBUG_MODE"] !== "undefined" && config["DEBUG_MODE"] !== "false") {
+      process.env.DEBUG_MODE = "true";
     }
-  }
-  console.log(needUpdate);
-  console.log(currVer[0] + " -> " + latest["release"] + "." + latest["version"]);
-  if (needUpdate) {
-    alert("Необходимо установить обновление");
-    const { shell } = require("electron");
-    let url = await latest["url"];
-    shell.openExternal(url);
+    return config;
+  } else {
+    return resetConfig();
   }
 }
-get();
-getUpdate();
+async function startup(token) {
+  let resp_to_render = {
+    error: false,
+    data: ""
+  };
+  let cfg = get();
+  if (cfg["PLAYER_TOKEN"] === "NULL") {
+    resp_to_render.error = true, resp_to_render.data = "FIRST_AUTH";
+    return resp_to_render;
+  } else {
+    let resp = await fetch(process.env.API_URL + "/player/token/" + cfg["PLAYER_TOKEN"], {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    let response = await resp.json();
+    if (response.error) {
+      console.log(response.data);
+    }
+    return await resp.json();
+  }
+}
+async function validate(token) {
+}
+async function auth(login, password, string) {
+}
+const auth$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  auth,
+  startup,
+  validate
+}, Symbol.toStringTag, { value: "Module" }));
+if (process.env.DEBUG_MODE) console.log(process.env);
 if (process.contextIsolated) {
   try {
     electron.contextBridge.exposeInMainWorld("electron", preload.electronAPI);
+    electron.contextBridge.exposeInMainWorld("auth", auth$1);
   } catch (error) {
     console.error(error);
   }
 } else {
   window.electron = preload.electronAPI;
+  window.auth = auth$1;
 }
