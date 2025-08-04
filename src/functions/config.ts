@@ -13,7 +13,7 @@ let config = new Array()
 export function get(){
   return read()
 }
-export function resetConfig() {
+export function reset() {
   if(process.env.DEBUG_MODE) console.log("Config corrupted - resetting");
 
     fs.writeFileSync(process.env.APP_DIR + '\\default.conf', config_example)
@@ -38,6 +38,6 @@ export function read() {
     }
     return config
   }else{    
-    return resetConfig()
+    return reset()
   }
 }

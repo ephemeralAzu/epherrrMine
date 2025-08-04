@@ -21,10 +21,10 @@ function _interopNamespaceDefault(e) {
 const fs__namespace = /* @__PURE__ */ _interopNamespaceDefault(fs);
 let config_example = "DEBUG_MODE=false;\nPLAYER_ID=NULL;\nPLAYER_UUID=NULL;\nPLAYER_NICKNAME=NULL;\nPLAYER_TOKEN=NULL;\nUPDATE_CHANNEL=release;\nAPP_DIR=" + process.env.APP_DIR + ";";
 let config = new Array();
-function get() {
+function get$1() {
   return read();
 }
-function resetConfig() {
+function reset() {
   if (process.env.DEBUG_MODE) console.log("Config corrupted - resetting");
   fs__namespace.writeFileSync(process.env.APP_DIR + "\\default.conf", config_example);
   config = read();
@@ -45,7 +45,7 @@ function read() {
     }
     return config;
   } else {
-    return resetConfig();
+    return reset();
   }
 }
 async function startup(token) {
@@ -53,29 +53,66 @@ async function startup(token) {
     error: false,
     data: ""
   };
-  let cfg = get();
+  let cfg = get$1();
   if (cfg["PLAYER_TOKEN"] === "NULL") {
-    resp_to_render.error = true, resp_to_render.data = "FIRST_AUTH";
+    if (process.env.DEBUG_MODE) console.log("First run with new config");
+    resp_to_render.error = true, resp_to_render.data = "FIRST_RUN";
     return resp_to_render;
   } else {
+    if (process.env.DEBUG_MODE) console.log("Check token in the config");
     let resp = await fetch(process.env.API_URL + "/player/token/" + cfg["PLAYER_TOKEN"], {
       method: "GET",
       headers: { "Content-Type": "application/json" }
     });
     let response = await resp.json();
     if (response.error) {
-      console.log(response.data);
+      if (process.env.DEBUG_MODE) console.log("token in the config incorrect!!!");
+      reset();
+      resp_to_render.error = true, resp_to_render.data = "CORRUPTED_CFG";
+      return resp_to_render;
+    } else {
+      if (process.env.DEBUG_MODE) console.log("token in the config accepted");
+      resp_to_render.error = false, resp_to_render.data = "ACCEPTED";
+      return resp_to_render;
     }
-    return await resp.json();
   }
 }
 async function validate(token) {
+  let resp_to_render = {
+    error: false,
+    data: ""
+  };
+  let resp = await fetch(process.env.API_URL + "/player/token/" + token, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" }
+  });
+  let response = await resp.json();
+  if (response.error) {
+    resp_to_render.error = true, resp_to_render.data = "INCORRECT_TOKEN";
+    return resp_to_render;
+  }
 }
-async function auth(login, password, string) {
+async function get(token) {
+  let resp_to_render = {
+    error: false,
+    data: ""
+  };
+  let resp = await fetch(process.env.API_URL + "/player/token/" + token, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" }
+  });
+  let response = await resp.json();
+  if (response.error) {
+    resp_to_render.error = true, resp_to_render.data = "INCORRECT_TOKEN";
+    return resp_to_render;
+  } else {
+    resp_to_render.error = false, resp_to_render.data = response.data;
+    return resp_to_render;
+  }
 }
-const auth$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const auth = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  auth,
+  get,
   startup,
   validate
 }, Symbol.toStringTag, { value: "Module" }));
@@ -83,11 +120,11 @@ if (process.env.DEBUG_MODE) console.log(process.env);
 if (process.contextIsolated) {
   try {
     electron.contextBridge.exposeInMainWorld("electron", preload.electronAPI);
-    electron.contextBridge.exposeInMainWorld("auth", auth$1);
+    electron.contextBridge.exposeInMainWorld("auth", auth);
   } catch (error) {
     console.error(error);
   }
 } else {
   window.electron = preload.electronAPI;
-  window.auth = auth$1;
+  window.auth = auth;
 }

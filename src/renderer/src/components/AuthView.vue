@@ -18,16 +18,22 @@ export default {
   },
   async mounted() {
     let token_check = await window.auth.startup()
-    if(token_check.error && token_check.data == "FIRST_AUTH"){
+    if(token_check.error && token_check.data == "FIRST_RUN"){
       this.$emit('loadingAnim', false, "", token_check.data)
-    }else{
-      
+    }
+    if(token_check.error && token_check.data == "CORRUPTED_CFG"){
+      this.$emit('loadingAnim', false, "", token_check.data)
+    }
+    if(!token_check.error && token_check.data == "ACCEPTED"){
+      this.$emit('loadingAnim', true, "Проверка аккаунта...", token_check.data)
+      this.$emit('openWindow',"nickname")
     }
   },
   methods: {
     async sendToken(token: String) {
       this.$emit('loadingAnim', true, 'Валидация токена...', token)
-
+      let token_check = await window.auth.validate(token)
+      console.log(token_check);
     },
   }
 }
