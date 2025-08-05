@@ -1,23 +1,32 @@
 <script lang="ts">
-import { Player, ModPack } from '@renderer/env';
-import { Config, Params } from 'electron';
-
 export default {
   props: ['openWindow', 'loadingAnim'],
   data() {
     return {
-      config: <Config>{
-        player: <Player>{ id: 0, token: '', nickname: '', uuid: '', role: '' },
-        params: <Params><unknown>{ ram: { min: 4, max: 6 }, packsPath: '' },
-        packs: new Array<ModPack>()
-      },
+      new_nickname: "",
       show: false,
       err: false
     }
   },
   async mounted() {
-    this.$emit('loadingAnim', false, "Верифицируем никнейм...")
-    console.log(await window.auth.get("aaa"));
+    this.$emit('loadingAnim', true, "Проверка аккаунта...", "")
+    let nickname = await window.auth.nicknameCheck()
+
+    if(nickname.error && nickname.data == "INCORRECT_TOKEN"){
+      this.$emit('loadingAnim', true, "Некорректная конфигурация...", nickname)
+      this.$emit('openWindow', "auth")
+    }
+    if(nickname.error && nickname.data == "NO_NICKNAME"){
+      this.$emit('loadingAnim', false, "Проверка аккаунта...", nickname)
+    }
+    if(!nickname.error && nickname.data == "SUCCESS"){
+      this.$emit('loadingAnim', true, "Запуск лаунчера", nickname)
+      this.$emit('openWindow', "play")
+    }
+    if(nickname.error && nickname.data == "NO_TOKEN"){
+      this.$emit('loadingAnim', true, "Сфабрикованный запуск. Токена нет в конфиге", nickname)
+      this.$emit('openWindow', "auth")
+    }
   },
   methods: {
   }
@@ -26,9 +35,9 @@ export default {
 <template>
   <div class="wrapper_nickname">
     <h1 class="head_text">Введите никнейм</h1>
-    <h2 v-if="err">{{ config.player.nickname }} уже занят!!!</h2>
+    <h2 v-if="err">{{ new_nickname }} уже занят!!!</h2>
     <form @submit.prevent="postNickname()" @click="err = false">
-      <input type="text" placeholder="Никнейм" v-model="config.player.nickname" />
+      <input type="text" placeholder="Никнейм" v-model="new_nickname" />
       <button><img src="../assets/arrow.svg" alt="" /></button>
     </form>
   </div>

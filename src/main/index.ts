@@ -3,7 +3,6 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-
 // import { dialog } from 'electron'
 require('dotenv').config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 if(process.env.NODE_ENV == "production"){process.env.APP_ROOT = process.env.APPDATA + '\\.ephermine\\'}
@@ -24,7 +23,9 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.on('ready-to-show', () => {mainWindow.show()})
+  mainWindow.on('ready-to-show', () => {
+    mainWindow.show()
+  })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
@@ -68,6 +69,7 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
 
   createWindow()
 

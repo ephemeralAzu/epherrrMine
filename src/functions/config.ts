@@ -6,15 +6,27 @@ let config_example =
   "PLAYER_NICKNAME=NULL;\n" +
   "PLAYER_TOKEN=NULL;\n" +
   "UPDATE_CHANNEL=release;\n" +
-  "APP_DIR=" + process.env.APP_DIR + ";"
+  "APP_DIR=" + process.env.APP_DIR
 
-let config = new Array()
+let config = new Object()
 
 export function get(){
-  return read()
+  if(process.env.DEBUG_MODE) console.log(config);
+  return config
 }
+
+export function set(name, value){
+  config[name] = value
+  let keys = Object.keys(config);
+  let str = ""
+  keys.forEach(key => {
+    str += key + "=" + config[key] + ";\n"
+  });
+  fs.writeFileSync(process.env.APP_DIR + '\\default.conf', str)
+}
+
 export function reset() {
-  if(process.env.DEBUG_MODE) console.log("Config corrupted - resetting");
+  if(process.env.DEBUG_MODE) console.log("Конфиг сломан - перезапись");
 
     fs.writeFileSync(process.env.APP_DIR + '\\default.conf', config_example)
 
@@ -30,12 +42,10 @@ export function read() {
     let cfg = new Array()
 
     variables.forEach(variable => {
-      cfg[variable.split("=")[0]] = variable.split("=")[1]
+      let string = variable.split("=")
+      if(string[0].length > 0 && string[0].length) cfg[string[0]] = string[1]
       config = cfg
     });
-    if(typeof config["DEBUG_MODE"] !== "undefined" && config["DEBUG_MODE"] !== "false"){
-      process.env.DEBUG_MODE = "true"
-    }
     return config
   }else{    
     return reset()

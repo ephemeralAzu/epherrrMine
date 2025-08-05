@@ -18,22 +18,37 @@ export default {
   },
   async mounted() {
     let token_check = await window.auth.startup()
+    //stay on token page
     if(token_check.error && token_check.data == "FIRST_RUN"){
-      this.$emit('loadingAnim', false, "", token_check.data)
+      this.$emit('loadingAnim', false, "Нуловой конфиг. Требуется настройка конфигурации", token_check)
     }
+    //stay on token page
     if(token_check.error && token_check.data == "CORRUPTED_CFG"){
-      this.$emit('loadingAnim', false, "", token_check.data)
+      this.$emit('loadingAnim', false, "Конфиг имеет неправильный токен", token_check)
     }
-    if(!token_check.error && token_check.data == "ACCEPTED"){
-      this.$emit('loadingAnim', true, "Проверка аккаунта...", token_check.data)
+    //open nickname page
+    if(!token_check.error && token_check.data == "SUCCESS"){
+      this.$emit('loadingAnim', true, "Проверка аккаунта...", token_check)
       this.$emit('openWindow',"nickname")
     }
   },
   methods: {
     async sendToken(token: String) {
-      this.$emit('loadingAnim', true, 'Валидация токена...', token)
+      this.$emit('loadingAnim', true, 'Проверка токена...', token)
       let token_check = await window.auth.validate(token)
-      console.log(token_check);
+
+      //stay on token page
+      if(token_check.error && token_check.data == "INCORRECT_TOKEN"){
+        this.show_error = true
+        this.$emit('loadingAnim', false, 'Токен не принят', token_check)
+      }
+
+      //stay on token page
+      if(!token_check.error && token_check.data == "SUCCESS"){
+        this.show_error = false
+        this.$emit('loadingAnim', true, 'Токен принят', token_check)
+        this.$emit('openWindow', "nickname")
+      }
     },
   }
 }
@@ -46,13 +61,12 @@ export default {
       <form @submit.prevent="sendToken(user.token)">
         <input
           type="text"
-          placeholder="Token"
+          placeholder="Токен"
           v-model="user.token"
           required
-          :style="'opacity:' + lock_form + '%;'"
-          :disabled="100 !== lock_form"
+          minlength="3"
         />
-        <button :style="'opacity:' + lock_form + '%;'" v-show="100 == lock_form">
+        <button>
           <img src="../assets/arrow.svg" alt="" />
         </button>
       </form>

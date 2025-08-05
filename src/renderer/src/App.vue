@@ -43,14 +43,19 @@ export default {
     }
   },
   methods: {
-    async loadingAnim(enabled: boolean, text: string, error: any) {
-      let debug = window.electron.process.env.DEBUG_MODE
-      if (debug === 'true') {
-        console.log(text)
-        console.log(error)
+    async loadingAnim(enabled: boolean, text: string, debug: any) {
+      let debug_mode = window.electron.process.env.DEBUG_MODE
+      if (debug_mode === 'true') {
+        if(text.length > 0){
+          console.log(text)
+        }
+        if(debug.length > 0 || typeof debug == "object"){
+          console.log(debug)
+        }
       }
       this.animation.text = text
       this.animation.enabled = enabled
+
     },
 
     openWindow(window: string) {
@@ -72,7 +77,7 @@ export default {
 
   },
   async mounted() {
-    this.loadingAnim(true, 'Запуск приложения...', {})
+    this.loadingAnim(true, 'Инициализация компонентов', "")
   }
 }
 </script>
@@ -102,7 +107,7 @@ export default {
 <style lang="scss" scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s;
+  transition: opacity 0.2s;
 }
 .overlay_loading {
   padding-top: 190px;
@@ -116,6 +121,7 @@ export default {
   z-index: 100;
   background: #010203;
   img {
+    pointer-events: none;
     height: 180px;
     margin-bottom: 30px;
   }
@@ -125,5 +131,6 @@ export default {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+  transition: 0.3s;
 }
 </style>
